@@ -1,26 +1,26 @@
 'use strict';
 
 var fs = require('fs');
-var bitmap = fs.readFileSync('test.bmp');
-var bitmapObject = {};
-
-bitmapObject.paletteSize = bitmap.readUInt32LE(46);
-
-function BitmapChanger(buff) {
-  var HEADER_SIZE = 54; // bytes
-  this.invert = function () {
-    for (var i = HEADER_SIZE; i < HEADER_SIZE+bitmapObject.paletteSize; i++) {
-      buffer[i] = 255 - buffer[i];
-    }
-  };
-  this.toBuffer = function () {
-    return buffer;
-  }
-};
+var reader = require('./lib/changer');
+var bitmap = fs.readFileSync(process.argv[2]);
 
 var buffer = new Buffer(bitmap);
+var buffer1 = new Buffer(bitmap);
+var buffer2 = new Buffer(bitmap);
 
-var bmpChanger = new BitmapChanger(buffer);
-bmpChanger.invert();
+var bmpChange = new reader(buffer);
+bmpChange.invert();
+bmpChange.toBuffer();
+fs.writeFile('./images/inverted.bmp', bmpChange.toBuffer());
 
-fs.writeFile('output.bmp', buffer);
+bmpChange = new reader(buffer1);
+bmpChange.shadow();
+bmpChange.toBuffer();
+fs.writeFile('./images/shadowed.bmp', bmpChange.toBuffer());
+
+bmpChange = new reader(buffer2);
+bmpChange.invert();
+bmpChange.shadow();
+bmpChange.toBuffer();
+fs.writeFile('./images/allChanges.bmp', bmpChange.toBuffer());
+
